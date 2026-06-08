@@ -174,6 +174,37 @@
       margin-bottom: 6px;
     }
 
+    .question-box {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .question-output {
+      min-height: 112px;
+      border: 1px solid #d7dee8;
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 12px;
+      color: var(--ink);
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .question-output small {
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .question-output p {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
     .canvas {
       padding: 22px;
       display: grid;
@@ -479,6 +510,15 @@
         <strong>Why ถามต่อ</strong>
         ทำไม UI test ไม่ควรเยอะ? ถ้า bug หลุด production จะเพิ่ม test ชั้นไหนก่อน?
       </div>
+
+      <div class="question-box">
+        <h2>สุ่มคำถาม Dev</h2>
+        <button id="random-question" type="button">Random question</button>
+        <div class="question-output" aria-live="polite">
+          <small id="question-tag">Prompt</small>
+          <p id="question-text">กดปุ่มเพื่อสุ่มคำถามปลายเปิด</p>
+        </div>
+      </div>
     </aside>
 
     <section class="canvas" aria-label="Testing pyramid sketch">
@@ -538,6 +578,9 @@
     const roleSlots = document.querySelectorAll(".role-slot");
     const status = document.querySelector("#status");
     const reset = document.querySelector("#reset");
+    const randomQuestion = document.querySelector("#random-question");
+    const questionTag = document.querySelector("#question-tag");
+    const questionText = document.querySelector("#question-text");
 
     const copy = {
       system: {
@@ -556,6 +599,49 @@
       integration: "Service/Integration",
       unit: "Unit test"
     };
+
+    const interviewQuestions = [
+      {
+        tag: "Pyramid",
+        text: "ทำไมเราไม่ให้ QA มา test ทีเดียวตอนท้ายไปเลย ทำไม dev ต้องเขียน test ด้วย?"
+      },
+      {
+        tag: "Pyramid",
+        text: "ถ้า Unit test เยอะแล้ว ยังต้องมี Integration test ไหม เพราะอะไร?"
+      },
+      {
+        tag: "Pyramid",
+        text: "ถ้ามี E2E test ครอบคลุม flow สำคัญแล้ว ยังต้องมี Unit test ไหม?"
+      },
+      {
+        tag: "Root cause",
+        text: "ถ้า bug หลุด production หนึ่งตัว คุณจะตัดสินยังไงว่าควรเพิ่ม test ที่ Unit, Integration หรือ UI?"
+      },
+      {
+        tag: "Collaboration",
+        text: "ในทีมที่ดี Dev กับ QA ควร collaborate กันยังไงตั้งแต่ requirement จนถึง release?"
+      },
+      {
+        tag: "Collaboration",
+        text: "ถ้า QA เจอ bug ตอนท้าย sprint บ่อยๆ คุณจะปรับวิธีทำงานกับ QA ยังไง?"
+      },
+      {
+        tag: "Bug fix",
+        text: "เวลา QA เจอ bug Dev ควรทำแค่ fix bug หรือควรทำอะไรเพิ่ม?"
+      },
+      {
+        tag: "Trade-off",
+        text: "ถ้า deadline ใกล้มาก คุณจะเลือกเขียน test ชั้นไหนก่อน และชั้นไหนยอมลดได้?"
+      },
+      {
+        tag: "Contract",
+        text: "ถ้า frontend เรียก API ผิด contract แต่ Unit test ผ่านหมด ควรเพิ่ม test แบบไหน?"
+      },
+      {
+        tag: "Manual QA",
+        text: "ถ้า QA มีแต่ manual test ทีมจะมี risk อะไร และ dev ช่วยลด risk นั้นได้ยังไง?"
+      }
+    ];
 
     testCards.forEach((card) => {
       card.addEventListener("dragstart", (event) => {
@@ -691,6 +777,12 @@
     }
 
     reset.addEventListener("click", resetBoard);
+
+    randomQuestion.addEventListener("click", () => {
+      const selected = interviewQuestions[Math.floor(Math.random() * interviewQuestions.length)];
+      questionTag.textContent = selected.tag;
+      questionText.textContent = selected.text;
+    });
   </script>
 </body>
 </html>
