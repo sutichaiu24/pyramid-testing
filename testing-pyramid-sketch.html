@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testing Pyramid Interview Sketch</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #64748b;
+      --unit: #f65aac;
+      --integration: #64adf2;
+      --ui: #00c917;
+      --orange: #f59e42;
+      --axis-green: #6aa84f;
+      --wrong: #dc2626;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #eef2f6;
+      color: var(--ink);
+    }
+
+    main {
+      min-height: 100vh;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: minmax(230px, 300px) minmax(680px, 1fr);
+      gap: 22px;
+    }
+
+    .palette,
+    .canvas {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid #d7dee8;
+      border-radius: 8px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    .palette {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 25px;
+      line-height: 1.16;
+    }
+
+    h2 {
+      font-size: 16px;
+    }
+
+    .intro,
+    .why-box,
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .test-card {
+      min-height: 60px;
+      border: 1px solid #cbd5e1;
+      border-left: 7px solid var(--accent);
+      border-radius: 8px;
+      background: white;
+      padding: 12px;
+      cursor: grab;
+      user-select: none;
+      display: grid;
+      align-items: center;
+      gap: 3px;
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+
+    .test-card:active {
+      cursor: grabbing;
+    }
+
+    .test-card.dragging {
+      opacity: 0.48;
+      transform: scale(0.98);
+    }
+
+    .test-card strong {
+      font-size: 15px;
+    }
+
+    .test-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .palette-section {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .role-card {
+      min-height: 46px;
+      border-left-width: 5px;
+      cursor: grab;
+    }
+
+    .role-card strong {
+      font-size: 14px;
+    }
+
+    .unit {
+      --accent: var(--unit);
+    }
+
+    .integration {
+      --accent: var(--integration);
+    }
+
+    .system {
+      --accent: var(--ui);
+    }
+
+    .role-qa {
+      --accent: var(--ui);
+    }
+
+    .role-shared {
+      --accent: var(--integration);
+    }
+
+    .role-dev {
+      --accent: var(--unit);
+    }
+
+    button {
+      height: 38px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: white;
+      color: #334155;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover {
+      background: #f8fafc;
+    }
+
+    .why-box {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+
+    .why-box strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .canvas {
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .stage {
+      min-height: 560px;
+      display: grid;
+      grid-template-columns: 140px minmax(430px, 1fr) 132px 150px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .axis {
+      height: 510px;
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      font-weight: 800;
+      font-style: italic;
+      font-size: 23px;
+      line-height: 1.12;
+    }
+
+    .axis::before {
+      content: "";
+      position: absolute;
+      top: 44px;
+      bottom: 44px;
+      left: 50%;
+      width: 4px;
+      transform: translateX(-50%);
+      background: currentColor;
+    }
+
+    .axis::after,
+    .axis .bottom::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      border-color: currentColor;
+      border-style: solid;
+    }
+
+    .axis::after {
+      top: 38px;
+      border-width: 4px 0 0 4px;
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .axis .bottom::before {
+      bottom: 38px;
+      border-width: 0 4px 4px 0;
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .axis-left {
+      color: var(--orange);
+      text-align: right;
+    }
+
+    .axis-right {
+      color: var(--axis-green);
+      text-align: left;
+    }
+
+    .role-slots {
+      height: 500px;
+      display: grid;
+      grid-template-rows: 1fr 1.18fr 1.55fr;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .role-slot {
+      width: 100%;
+      min-height: 64px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #94a3b8;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 800;
+      font-size: 15px;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .role-slot.over {
+      border-color: #111827;
+      background: #eef6ff;
+      transform: translateY(-2px);
+    }
+
+    .role-slot.wrong {
+      border-color: var(--wrong);
+      color: var(--wrong);
+      background: rgba(220, 38, 38, 0.08);
+    }
+
+    .role-slot.filled {
+      border-style: solid;
+      color: white;
+      text-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+    }
+
+    .role-slot[data-role-zone="system"].filled {
+      background: var(--ui);
+      border-color: var(--ui);
+    }
+
+    .role-slot[data-role-zone="integration"].filled {
+      background: var(--integration);
+      border-color: var(--integration);
+    }
+
+    .role-slot[data-role-zone="unit"].filled {
+      background: var(--unit);
+      border-color: var(--unit);
+    }
+
+    .axis .top,
+    .axis .bottom {
+      position: relative;
+      z-index: 1;
+      background: white;
+      padding-block: 4px;
+    }
+
+    .axis .top {
+      align-self: start;
+    }
+
+    .axis .bottom {
+      align-self: end;
+    }
+
+    .pyramid-wrap {
+      height: 540px;
+      display: grid;
+      place-items: center;
+    }
+
+    .pyramid {
+      width: min(96%, 790px);
+      height: 500px;
+      display: grid;
+      grid-template-rows: 1fr 1.18fr 1.55fr;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .tier {
+      margin-inline: auto;
+      min-height: 120px;
+      border: 3px solid rgba(255, 255, 255, 0.96);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: white;
+      padding: 22px 28px;
+      transition: border-color 160ms ease, filter 160ms ease, transform 160ms ease;
+      text-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    }
+
+    .tier.over {
+      border-color: #111827;
+      filter: saturate(1.15);
+      transform: translateY(-2px);
+    }
+
+    .tier.wrong {
+      border-color: var(--wrong);
+      box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.12);
+    }
+
+    .system-zone {
+      width: 34%;
+      background: var(--ui);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+
+    .integration-zone {
+      width: 64%;
+      background: var(--integration);
+      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    }
+
+    .unit-zone {
+      width: 94%;
+      background: var(--unit);
+      clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+    }
+
+    .tier-content {
+      display: grid;
+      max-width: 420px;
+    }
+
+    .tier-content strong {
+      font-size: clamp(26px, 3.5vw, 42px);
+      line-height: 1.05;
+      white-space: normal;
+    }
+
+    .system-zone .tier-content {
+      max-width: 150px;
+      transform: translateY(18px);
+    }
+
+    .system-zone .tier-content strong {
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    .integration-zone .tier-content {
+      max-width: 520px;
+    }
+
+    .integration-zone .tier-content strong {
+      font-size: clamp(24px, 3vw, 36px);
+      white-space: nowrap;
+    }
+
+    .tier.filled .tier-content strong {
+      font-size: clamp(22px, 3vw, 36px);
+    }
+
+    .status {
+      min-height: 42px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+
+    .status.good {
+      color: #166534;
+    }
+
+    .status.bad {
+      color: var(--wrong);
+    }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      .stage {
+        grid-template-columns: 82px minmax(280px, 1fr) 82px 96px;
+        gap: 6px;
+      }
+
+      .axis {
+        font-size: 16px;
+      }
+
+      .role-slot {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <aside class="palette" aria-label="Test cards">
+      <h2>ลากคำตอบไปวาง</h2>
+      <p class="intro">โจทย์สั้นๆ สำหรับดูว่า candidate เข้าใจ trade-off ของ test แต่ละชั้นไหม</p>
+
+      <div class="test-card system" draggable="true" data-test="system">
+        <strong>UI / E2E Test</strong>
+      </div>
+
+      <div class="test-card integration" draggable="true" data-test="integration">
+        <strong>Service / Integration</strong>
+      </div>
+
+      <div class="test-card unit" draggable="true" data-test="unit">
+        <strong>Unit Test</strong>
+      </div>
+
+      <div class="palette-section" aria-label="Role cards">
+        <h2>ลาก role ไปวาง</h2>
+        <div class="test-card role-card role-qa" draggable="true" data-role="system">
+          <strong>QA</strong>
+        </div>
+        <div class="test-card role-card role-shared" draggable="true" data-role="integration">
+          <strong>DEV + QA</strong>
+        </div>
+        <div class="test-card role-card role-dev" draggable="true" data-role="unit">
+          <strong>DEV</strong>
+        </div>
+      </div>
+
+      <button id="reset" type="button" onclick="resetBoard()">Reset</button>
+
+      <div class="why-box">
+        <strong>Why ถามต่อ</strong>
+        ทำไม UI test ไม่ควรเยอะ? ถ้า bug หลุด production จะเพิ่ม test ชั้นไหนก่อน?
+      </div>
+    </aside>
+
+    <section class="canvas" aria-label="Testing pyramid sketch">
+      <header>
+        <h1>Testing Pyramid: drag the test level into the right layer</h1>
+      </header>
+
+      <div class="stage">
+        <div class="axis axis-left" aria-label="Integration and isolation axis">
+          <div class="top">More<br>integration</div>
+          <div class="bottom">More<br>isolation</div>
+        </div>
+
+        <div class="pyramid-wrap">
+          <div class="pyramid">
+            <div class="tier system-zone" data-zone="system">
+              <div class="tier-content">
+                <strong>UI</strong>
+              </div>
+            </div>
+
+            <div class="tier integration-zone" data-zone="integration">
+              <div class="tier-content">
+                <strong>Service/Integration</strong>
+              </div>
+            </div>
+
+            <div class="tier unit-zone" data-zone="unit">
+              <div class="tier-content">
+                <strong>Unit test</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="axis axis-right" aria-label="Speed and cost axis">
+          <div class="top">Slower<br>$$$</div>
+          <div class="bottom">Faster<br>cheaper</div>
+        </div>
+
+        <div class="role-slots" aria-label="Role ownership slots">
+          <div class="role-slot" data-role-zone="system">Role?</div>
+          <div class="role-slot" data-role-zone="integration">Role?</div>
+          <div class="role-slot" data-role-zone="unit">Role?</div>
+        </div>
+      </div>
+
+      <p id="status" class="status">ลากการ์ดจากซ้ายไปวางบนชั้นของ pyramid</p>
+    </section>
+  </main>
+
+  <script>
+    const cards = document.querySelectorAll(".test-card");
+    const testCards = document.querySelectorAll("[data-test]");
+    const roleCards = document.querySelectorAll("[data-role]");
+    const zones = document.querySelectorAll(".tier");
+    const roleSlots = document.querySelectorAll(".role-slot");
+    const status = document.querySelector("#status");
+    const reset = document.querySelector("#reset");
+
+    const copy = {
+      system: {
+        title: "UI"
+      },
+      integration: {
+        title: "Service/Integration"
+      },
+      unit: {
+        title: "Unit test"
+      }
+    };
+
+    const labels = {
+      system: "UI",
+      integration: "Service/Integration",
+      unit: "Unit test"
+    };
+
+    testCards.forEach((card) => {
+      card.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/test-level", card.dataset.test);
+        card.classList.add("dragging");
+      });
+
+      card.addEventListener("dragend", () => {
+        card.classList.remove("dragging");
+      });
+    });
+
+    roleCards.forEach((card) => {
+      card.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/role-owner", card.dataset.role);
+        card.classList.add("dragging");
+      });
+
+      card.addEventListener("dragend", () => {
+        card.classList.remove("dragging");
+      });
+    });
+
+    zones.forEach((zone) => {
+      zone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        zone.classList.add("over");
+      });
+
+      zone.addEventListener("dragleave", () => {
+        zone.classList.remove("over");
+      });
+
+      zone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        zone.classList.remove("over", "wrong");
+
+        const testType = event.dataTransfer.getData("text/test-level");
+
+        if (!testType) {
+          return;
+        }
+
+        const isCorrect = testType === zone.dataset.zone;
+
+        if (!isCorrect) {
+          zone.classList.add("wrong");
+          status.className = "status bad";
+          status.textContent = "ยังไม่ใช่ชั้นนี้ ลองถาม candidate ว่าทำไม test แบบนี้ถึงไม่ควรอยู่ตรงนี้";
+          return;
+        }
+
+        zone.classList.add("filled");
+        zone.querySelector(".tier-content").innerHTML = `
+          <strong>${copy[testType].title}</strong>
+        `;
+
+        const card = document.querySelector(`[data-test="${testType}"].test-card`);
+        card.style.visibility = "hidden";
+
+        const completed = document.querySelectorAll(".tier.filled").length;
+        status.className = "status good";
+        status.textContent = completed === 3
+          ? "ครบแล้ว: ขึ้นบน = integration/cost/time สูงขึ้น, ลงล่าง = isolation/feedback เร็วขึ้น"
+          : "ถูกต้องครับ ลากชิ้นถัดไปต่อได้เลย";
+      });
+    });
+
+    roleSlots.forEach((slot) => {
+      slot.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        slot.classList.add("over");
+      });
+
+      slot.addEventListener("dragleave", () => {
+        slot.classList.remove("over");
+      });
+
+      slot.addEventListener("drop", (event) => {
+        event.preventDefault();
+        slot.classList.remove("over", "wrong");
+
+        const roleType = event.dataTransfer.getData("text/role-owner");
+
+        if (!roleType) {
+          return;
+        }
+
+        const isCorrect = roleType === slot.dataset.roleZone;
+
+        if (!isCorrect) {
+          slot.classList.add("wrong");
+          status.className = "status bad";
+          status.textContent = "Role ยังไม่ตรงชั้นนี้ ลองถามว่า ownership ของ test ชั้นนี้ควรเป็นใคร";
+          return;
+        }
+
+        const roleCopy = {
+          system: "QA",
+          integration: "DEV + QA",
+          unit: "DEV"
+        };
+
+        slot.classList.add("filled");
+        slot.textContent = roleCopy[roleType];
+
+        const card = document.querySelector(`[data-role="${roleType}"].test-card`);
+        card.style.visibility = "hidden";
+
+        status.className = "status good";
+        status.textContent = "ถูกต้องครับ role ownership ชัดขึ้นแล้ว";
+      });
+    });
+
+    function resetBoard() {
+      zones.forEach((zone) => {
+        zone.classList.remove("wrong", "over", "filled");
+        zone.querySelector(".tier-content").innerHTML = "";
+      });
+
+      roleSlots.forEach((slot) => {
+        slot.classList.remove("wrong", "over", "filled");
+        slot.textContent = "Role?";
+      });
+
+      cards.forEach((card) => {
+        card.classList.remove("dragging");
+        card.style.visibility = "";
+      });
+
+      status.className = "status";
+      status.textContent = "ลากการ์ดจากซ้ายไปวางบนชั้นของ pyramid";
+    }
+
+    reset.addEventListener("click", resetBoard);
+  </script>
+</body>
+</html>
